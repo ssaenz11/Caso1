@@ -16,6 +16,7 @@ public class Cliente extends Thread
 
 	public void run()
 	{
+		// crea un mensaje según un buffer
 		servicio = new Mensaje(buffer);
 		for(int i = 0; i < consultas ; i++)
 		{
