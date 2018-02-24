@@ -1,26 +1,45 @@
 import java.util.ArrayList;
-
-
+//Gabriel Pinto - 201515275
+//Santiago Saenz - 201512416
+import com.sun.xml.internal.ws.util.NoCloseOutputStream;
+//Gabriel Pinto - 201515275
+//Santiago Saenz - 201512416
 public class Buffer 
 {
 	
-	// lista de mensajes que se han enviado
-	private ArrayList<Mensaje> mensajes;
+	/**
+	 * Capacidad de almacenamientos del buffer
+	 */
+	private static int capacidad;
 	
-	// es la capaciadad de almacenamiento del buffer
-	private int capacidad;
+	/**
+	 * Mensajes en el buffer
+	 */
+	private static int espera;
 	
-	// usuaris que etsán usando el buffer
-	private int numClientes;
+	/**
+	 * Mensajes por enviar
+	 */
+	private static ArrayList<Mensaje> mensajes;
+	
+	/**
+	 * Número de clientes que están realizando consultas
+	 */
+	private static int numClientes;
 
-	public Buffer ( int n , int clientes) 
+	/**
+	 * Constructor del Buffer
+	 * @param capaci Capacidad de almacenamiento del buffer
+	 * @param clientes Número de clientes 
+	 */
+	public Buffer (int capaci, int clientes) 
 	{
-		capacidad = n;
-		mensajes = new ArrayList<Mensaje>( );
-		numClientes=clientes;
+		capacidad = capaci;
+		mensajes = new ArrayList<>();
+		numClientes = clientes;
+		espera = 0;
 	}
 
-	
 	/**
 	 * funciona de tal manera que si la cantidad de mensajes es igual a la capacidad del buffer
 	 * se hace un yield que cede el paso a otro thread, en caso contrario se almacena el mensaje y se notifica a todos.
@@ -28,16 +47,19 @@ public class Buffer
 	 * @param msg
 	 * @throws InterruptedException
 	 */
-	public synchronized void almacenarMensaje ( Mensaje msg ) throws InterruptedException
+	public synchronized void enviarMensaje(Mensaje msg) throws InterruptedException
 	{
 		while(mensajes.size() == capacidad){
 			Thread.yield();
 		}
+		
 		mensajes.add(msg);
-		notifyAll();
-
-		synchronized (this) { wait();}
-
+		espera++;
+		notify();
+		
+		synchronized (msg) {
+			msg.wait();
+		}
 	}
 	
 	/**
@@ -45,26 +67,31 @@ public class Buffer
 	 * En caso de que si haya algo se remueve el mensaje y se responde para el finalmente notifique a todos.
 	 * @throws InterruptedException
 	 */
-
-	public synchronized void retirarMensaje() throws InterruptedException
+	public synchronized void responderMensaje(int id) throws InterruptedException
 	{
-
-		while( mensajes.size() == 0){
+		while(mensajes.size() == 0){
 			wait();
 		}
-
-		Mensaje resp = mensajes.remove(0);
-		resp.responder();
-		synchronized (this) {notifyAll();}
+		
+		espera--;
+		Mensaje mensa = mensajes.remove(0);
+		int resp = mensa.getConsulta() + 1;
+		mensa.setRespuesta(resp);
+		mensa.notify();
 	}
 
 	public boolean hayClientes()
 	{
-		return (numClientes == 0);
+		return (numClientes != 0);
 	}
 	
-	public void terminar(){
+	public synchronized void terminar(){
 		numClientes--;
+		if(numClientes == 0)
+		{
+			System.out.println("Fin");
+		}
+		
 	}
 
 }
