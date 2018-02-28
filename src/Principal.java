@@ -33,6 +33,7 @@ public class Principal
 		buffer = new Buffer(tamBuffer, numClientes);
 
 		Servidor ser;
+		
 		//Se crean los servidores
 		for(int i = 0; i < numServers; i++)
 		{ 

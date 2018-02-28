@@ -34,12 +34,19 @@ public class Cliente extends Thread
 	{
 		for (int i = 0; i < consultas; i++) {
 			Mensaje mensaje = new Mensaje(i, idCliente);
-			try {			
-				buffer.enviarMensaje(mensaje);
+			try {	
+				if(buffer.enviarMensaje(mensaje))
+				{
+					synchronized (mensaje) {
+						mensaje.wait();
+					}			
+				}
+				System.out.println("Cliente: " + idCliente + " -- Consulta: " + mensaje.getConsulta()  + " -- Respuesta:" + mensaje.getRespuesta());
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
+		System.out.println("El cliente con id: " + idCliente + " terminó sus consultas");
 		buffer.terminar();
 	}
 }
