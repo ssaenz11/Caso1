@@ -30,6 +30,9 @@ public class Cliente extends Thread
 		idCliente = id;
 	}
 
+	/**
+	 * Empieza a desarrollar las tareas indicadas dentro del thread. 
+	 */
 	public void run()
 	{
 		for (int i = 0; i < consultas; i++) {
@@ -41,7 +44,8 @@ public class Cliente extends Thread
 						mensaje.wait();
 					}			
 				}
-				System.out.println("Cliente: " + idCliente + " -- Consulta: " + mensaje.getConsulta()  + " -- Respuesta:" + mensaje.getRespuesta());
+				System.out.println("Cliente: " + idCliente + " -- Consulta: " + mensaje.getConsulta()  + 
+								   " -- Respuesta:" + mensaje.getRespuesta());
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
